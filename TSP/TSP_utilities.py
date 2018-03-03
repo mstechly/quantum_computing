@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def create_nodes_array(N):
     nodes_list = []
     for i in range(N):
-        nodes_list.append(np.random.rand(2))
+        nodes_list.append(np.random.rand(2) * 10)
     return np.array(nodes_list)
 
 
@@ -51,11 +51,10 @@ def calculate_cost(cost_matrix, solution):
 def plot_solution(nodes_array, solution):
     plt.scatter(nodes_array[:, 0], nodes_array[:, 1], s=200)
     for i in range(len(nodes_array)):
-        plt.annotate(i, (nodes_array[i, 0] + 0.1, nodes_array[i, 1] + 0.1), size=16, color='r')
+        plt.annotate(i, (nodes_array[i, 0] + 0.15, nodes_array[i, 1] + 0.15), size=16, color='r')
 
-
-    plt.xlim([min(nodes_array[:, 0]) - 0.1, max(nodes_array[:, 0]) + 0.20])
-    plt.ylim([min(nodes_array[:, 1]) - 0.1, max(nodes_array[:, 1]) + 0.20])
+    plt.xlim([min(nodes_array[:, 0]) - 1, max(nodes_array[:, 0]) + 1])
+    plt.ylim([min(nodes_array[:, 1]) - 1, max(nodes_array[:, 1]) + 1])
     for i in range(len(solution) - 1):
         A = solution[i]
         B = solution[i + 1]
@@ -66,3 +65,22 @@ def plot_solution(nodes_array, solution):
     title_string += "\n" + str(solution)
     plt.title(title_string)
     plt.show()
+
+
+def binary_state_to_points_order(binary_state):
+    points_order = [0]
+    number_of_points = int(np.sqrt(len(binary_state)) + 1)
+    for p in range(number_of_points - 1):
+        for j in range(number_of_points - 1):
+            if binary_state[(number_of_points - 1) * p + j] == 1:
+                points_order.append(j + 1)
+    return points_order
+
+
+def points_order_to_binary_state(points_order):
+    number_of_points = len(points_order)
+    binary_state = np.zeros((len(points_order) - 1)**2)
+    for j in range(1, len(points_order)):
+        p = points_order[j]
+        binary_state[(number_of_points - 1) * (j - 1) + (p - 1)] = 1
+    return binary_state
