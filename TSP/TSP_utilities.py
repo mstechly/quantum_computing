@@ -1,5 +1,9 @@
 import numpy as np
 import itertools
+# This funny way of using matplotlib is due to my problems with _tkinter
+# https://stackoverflow.com/a/4935945/3021669
+import matplotlib as mpl
+mpl.use('pdf')
 import matplotlib.pyplot as plt
 
 def create_nodes_array(N):
@@ -48,7 +52,7 @@ def calculate_cost(cost_matrix, solution):
     return cost
 
 
-def plot_solution(nodes_array, solution):
+def plot_solution(name, nodes_array, solution):
     plt.scatter(nodes_array[:, 0], nodes_array[:, 1], s=200)
     for i in range(len(nodes_array)):
         plt.annotate(i, (nodes_array[i, 0] + 0.15, nodes_array[i, 1] + 0.15), size=16, color='r')
@@ -64,7 +68,8 @@ def plot_solution(nodes_array, solution):
     title_string = "Cost:" + str(cost)
     title_string += "\n" + str(solution)
     plt.title(title_string)
-    plt.show()
+    plt.savefig(name + '.png')
+    plt.clf()
 
 
 def binary_state_to_points_order(binary_state):
