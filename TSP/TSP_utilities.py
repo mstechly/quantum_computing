@@ -6,7 +6,11 @@ import matplotlib as mpl
 mpl.use('pdf')
 import matplotlib.pyplot as plt
 
-def create_nodes_array(N):
+def create_nodes_array(N, seed=None):
+    if seed:
+        print("seed", seed)
+        np.random.seed(seed)
+
     nodes_list = []
     for i in range(N):
         nodes_list.append(np.random.rand(2) * 10)

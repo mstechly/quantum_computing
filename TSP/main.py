@@ -5,8 +5,10 @@ import qTSP_qiskit
 import pdb
 
 def main():
+    seed = 5406
+    nodes_array = TSP_utilities.create_nodes_array(4, seed=seed)
+
     print("Brute Force solution")
-    nodes_array = TSP_utilities.create_nodes_array(4)
     start_time = time.time()
     brute_force_solution = TSP_utilities.solve_tsp_brute_force(nodes_array)
     end_time = time.time()
