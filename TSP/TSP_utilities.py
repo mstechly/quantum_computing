@@ -93,3 +93,12 @@ def points_order_to_binary_state(points_order):
         p = points_order[j]
         binary_state[(number_of_points - 1) * (j - 1) + (p - 1)] = 1
     return binary_state
+
+def binary_state_to_points_order_full(binary_state):
+    points_order = []
+    number_of_points = int(np.sqrt(len(binary_state)))
+    for p in range(number_of_points):
+        for j in range(number_of_points):
+            if binary_state[(number_of_points) * p + j] == 1:
+                points_order.append(j)
+    return points_order
