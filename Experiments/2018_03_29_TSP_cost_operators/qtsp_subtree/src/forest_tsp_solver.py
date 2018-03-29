@@ -3,7 +3,7 @@ import numpy as np
 from grove.pyqaoa.qaoa import QAOA
 from pyquil.paulis import PauliTerm, PauliSum
 import scipy.optimize
-import TSP_utilities
+from . import TSP_utilities
 import pdb
 
 class ForestTSPSolver(object):
@@ -11,7 +11,7 @@ class ForestTSPSolver(object):
     def __init__(self, nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4):
         self.nodes_array = nodes_array
         self.qvm = api.QVMConnection()
-        self.steps = 3
+        self.steps = steps
         self.ftol = ftol
         self.xtol = xtol
         self.betas = None
@@ -48,7 +48,7 @@ class ForestTSPSolver(object):
         print("Most frequent bitstring from sampling")
         most_freq_string, sampling_results = self.qaoa_inst.get_string(self.betas, self.gammas, samples=10000)
         self.most_freq_string = most_freq_string
-        return sampling_results
+        return sampling_results.most_common()
 
     def get_solution(self):
         if self.most_freq_string is None:
