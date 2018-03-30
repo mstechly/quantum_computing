@@ -18,12 +18,6 @@ class ForestTSPSolver(object):
         self.gammas = None
         self.qaoa_inst = None
         self.most_freq_string = None
-        
-    def solve_tsp(self):
-        self.find_angles()
-        return self.get_solution()
-
-    def find_angles(self):
         self.number_of_qubits = self.get_number_of_qubits()
 
         cost_operators = self.create_cost_operators()
@@ -41,11 +35,16 @@ class ForestTSPSolver(object):
                          minimizer=scipy.optimize.minimize,
                          minimizer_kwargs=minimizer_kwargs,
                          vqe_options=vqe_option)
+        
+    def solve_tsp(self):
+        self.find_angles()
+        return self.get_solution()
 
+    def find_angles(self):
         self.betas, self.gammas = self.qaoa_inst.get_angles()
+        return self.betas, self.gammas
 
     def get_results(self):
-        print("Most frequent bitstring from sampling")
         most_freq_string, sampling_results = self.qaoa_inst.get_string(self.betas, self.gammas, samples=10000)
         self.most_freq_string = most_freq_string
         return sampling_results.most_common()
@@ -85,7 +84,7 @@ class ForestTSPSolver(object):
         cost_operators = []
         tsp_matrix = TSP_utilities.get_tsp_matrix(self.nodes_array)
         # weight = -10 * np.max(tsp_matrix)
-        weight = 0.5
+        weight = -0.5
         for i in range_of_qubits:
             if i == range_of_qubits[0]:
                 z_term = PauliTerm("Z", i, weight)
@@ -128,7 +127,8 @@ class ForestTSPSolver(object):
 
 
 def print_fun(x):
-    print(x)
+    # print(x)
+    pass
 
 
 def visualize_cost_matrix(qaoa_inst, cost_operators, number_of_qubits, gammas=np.array([1.0]), steps=1):
