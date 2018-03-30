@@ -8,7 +8,7 @@ import pdb
 
 class ForestTSPSolver(object):
     """docstring for TSPSolver"""
-    def __init__(self, nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4):
+    def __init__(self, nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4, all_ones_coefficient=0):
         self.nodes_array = nodes_array
         self.qvm = api.QVMConnection()
         self.steps = steps
@@ -19,6 +19,7 @@ class ForestTSPSolver(object):
         self.qaoa_inst = None
         self.most_freq_string = None
         self.number_of_qubits = self.get_number_of_qubits()
+        self.all_ones_coefficient = all_ones_coefficient
 
         cost_operators = self.create_cost_operators()
         driver_operators = self.create_driver_operators()
@@ -94,7 +95,7 @@ class ForestTSPSolver(object):
                 all_ones_term = all_ones_term * (PauliTerm("I", 0, 0.5) - PauliTerm("Z", i, 0.5))
 
         z_term = PauliSum([z_term])
-        cost_operators.append(PauliTerm("I", 0, weight) - z_term)
+        cost_operators.append(PauliTerm("I", 0, weight) - z_term + self.all_ones_coefficient * all_ones_term)
 
         return cost_operators
 
