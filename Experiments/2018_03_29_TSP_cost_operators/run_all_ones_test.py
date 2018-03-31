@@ -7,11 +7,11 @@ import csv
 import sys
 import random
 
-def run_testing_sequence(number_of_nodes=3, is_random=False):
+def run_testing_sequence(number_of_nodes=3, is_random=False, all_ones=-2):
     nodes_array = np.array([[0, 0], [0,5], [5,5], [5,0]])
     nodes_array = nodes_array[:number_of_nodes]
     file_time = time.time()
-    results_file = open("results_all_ones_minus_2" + str(file_time) + ".csv", 'w')
+    results_file = open("results_all_ones_minus_"+ str(np.abs(all_ones))+"_" + str(file_time) + ".csv", 'w')
 
     results_file.write("steps,tol,valid_prob,almost_valid_prob,time,best_valid,best_almost_valid\n")
     csv_writer = csv.writer(results_file)
@@ -21,12 +21,12 @@ def run_testing_sequence(number_of_nodes=3, is_random=False):
         while True:
             steps = random.choice(possible_steps)
             xtol = random.choice(possible_xtol)
-            run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=0)
+            run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=all_ones)
     else:
         for steps in possible_steps:
             for xtol in possible_xtol:
                 for i in range(10):
-                    run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=-2)
+                    run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=all_ones)
     results_file.close()
 
 def run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=0):
@@ -51,8 +51,6 @@ def run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=0):
     print(row)
     if csv_writer is not None:
         csv_writer.writerow(row)
-    else:
-        pdb.set_trace()
     sys.stdout.flush()
 
 
@@ -97,7 +95,7 @@ def calculate_metrics(results, calculation_time):
     return [valid_results_probability, almost_valid_results_probability, calculation_time, best_result_valid, best_result_almost_valid]
 
 def main():
-    run_testing_sequence(number_of_nodes=3, is_random=False)
+    run_testing_sequence(number_of_nodes=3, is_random=False, all_ones=-2)
     # nodes_array = np.array([[0,0], [0, 5], [0, 10]])
     # run_single_tsp(nodes_array, None, 3, 1e-4, 2)
 
