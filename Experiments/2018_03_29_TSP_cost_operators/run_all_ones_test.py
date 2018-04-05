@@ -12,24 +12,26 @@ def run_testing_sequence(number_of_nodes=3, is_random=False, all_ones=-2):
     nodes_array = nodes_array[:number_of_nodes]
     file_time = time.time()
     results_file = open("results_all_ones_minus_"+ str(np.abs(all_ones))+"_" + str(file_time) + ".csv", 'w')
+    angles_file = open("angles_all_ones_minus_"+ str(np.abs(all_ones))+"_" + str(file_time) + ".csv", 'w')
 
     results_file.write("steps,tol,valid_prob,almost_valid_prob,time,best_valid,best_almost_valid\n")
     csv_writer = csv.writer(results_file)
-    possible_steps = [3]
-    possible_xtol = [1e-3]
+    csv_writer_angles = csv.writer(angles_file)
+    possible_steps = [3, 2, 1]
+    possible_xtol = [1e-4, 1e-3, 1e-2]
     if is_random:
         while True:
             steps = random.choice(possible_steps)
             xtol = random.choice(possible_xtol)
-            run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=all_ones)
+            run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol, all_ones=all_ones)
     else:
         for steps in possible_steps:
             for xtol in possible_xtol:
                 for i in range(10):
-                    run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=all_ones)
+                    run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol, all_ones=all_ones)
     results_file.close()
 
-def run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=0):
+def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol, all_ones=0):
     params = [steps, xtol]
     print(steps, xtol)
     ftol = xtol
@@ -51,6 +53,10 @@ def run_single_tsp(nodes_array, csv_writer, steps, xtol, all_ones=0):
     print(row)
     if csv_writer is not None:
         csv_writer.writerow(row)
+        csv_writer_angles.writerow(row)
+        csv_writer_angles.writerow(betas)
+        csv_writer_angles.writerow(gammas)
+        csv_writer_angles.writerow("\n")
     sys.stdout.flush()
 
 
