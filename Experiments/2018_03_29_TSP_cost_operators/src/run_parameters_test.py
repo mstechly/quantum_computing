@@ -11,7 +11,7 @@ def run_testing_sequence(number_of_nodes=3, is_random=False):
     nodes_array = np.array([[0, 0], [0,5], [5,5], [5,0]])
     nodes_array = nodes_array[:number_of_nodes]
     file_time = time.time()
-    results_file = open("results_3_nodes_" + str(file_time) + ".csv", 'w')
+    results_file = open("results_4_nodes_" + str(file_time) + ".csv", 'w')
 
     results_file.write("steps,tol,valid_prob,almost_valid_prob,time,best_valid,best_almost_valid\n")
     csv_writer = csv.writer(results_file)
@@ -48,6 +48,8 @@ def run_single_tsp(nodes_array, csv_writer, steps, xtol):
     print(row)
     if csv_writer is not None:
         csv_writer.writerow(row)
+    else:
+        pdb.set_trace()
     sys.stdout.flush()
 
 
@@ -92,9 +94,9 @@ def calculate_metrics(results, calculation_time):
     return [valid_results_probability, almost_valid_results_probability, calculation_time, best_result_valid, best_result_almost_valid]
 
 def main():
-    run_testing_sequence(number_of_nodes=3, is_random=True)
-    # nodes_array = np.array([[0,0], [0, 5], [0, 10]])
-    # run_single_tsp(nodes_array, None, 3, 1e-4)
+    # run_testing_sequence(number_of_nodes=3, is_random=True)
+    nodes_array = np.array([[0,0], [0, 5], [5, 5], [5, 0]])
+    run_single_tsp(nodes_array, None, 3, 1e-4)
 
 
 if __name__ == '__main__':
