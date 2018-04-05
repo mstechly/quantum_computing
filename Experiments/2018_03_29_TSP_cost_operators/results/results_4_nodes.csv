@@ -1,0 +1,7 @@
+steps,tol,valid_prob,almost_valid_prob,time,best_valid,best_almost_valid
+1,0.01,88,0,182.0590431690216,False,False
+2,0.01,35,0,918.9489510059357,False,False
+2,0.001,86,0,987.8289501667023,False,False
+1,0.001,91,0,335.86358284950256,False,False
+2,0.01,34,0,709.3642017841339,False,False
+2,0.0001,167,0,1986.717073917389,False,False
