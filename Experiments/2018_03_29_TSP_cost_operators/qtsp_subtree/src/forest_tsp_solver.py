@@ -8,7 +8,7 @@ import pdb
 
 class ForestTSPSolver(object):
     """docstring for TSPSolver"""
-    def __init__(self, nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4, all_ones_coefficient=0):
+    def __init__(self, nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4, all_ones_coefficient=-1):
         self.nodes_array = nodes_array
         self.qvm = api.QVMConnection()
         self.steps = steps
@@ -52,7 +52,7 @@ class ForestTSPSolver(object):
 
     def get_solution(self):
         if self.most_freq_string is None:
-            self.most_freq_string, _ = self.qaoa_inst.get_string(self.betas, self.gammas, samples=10000)
+            self.most_freq_string, sampling_results = self.qaoa_inst.get_string(self.betas, self.gammas, samples=10000)
         quantum_order = TSP_utilities.binary_state_to_points_order_full(self.most_freq_string)
         return quantum_order
 
@@ -60,7 +60,7 @@ class ForestTSPSolver(object):
         cost_operators = []
         cost_operators += self.create_penalty_operators_for_bilocation()
         cost_operators += self.create_penalty_operators_for_repetition()
-        # cost_operators += create_weights_cost_operators(nodes_array)
+        # cost_operators += self.create_weights_cost_operators()
         return cost_operators
 
     def create_penalty_operators_for_bilocation(self):
@@ -84,8 +84,8 @@ class ForestTSPSolver(object):
     def create_penalty_operators_for_qubit_range(self, range_of_qubits):
         cost_operators = []
         tsp_matrix = TSP_utilities.get_tsp_matrix(self.nodes_array)
-        # weight = -10 * np.max(tsp_matrix)
-        weight = -0.5
+        weight = -10 * np.max(tsp_matrix)
+        # weight = -0.5
         for i in range_of_qubits:
             if i == range_of_qubits[0]:
                 z_term = PauliTerm("Z", i, weight)
