@@ -60,7 +60,7 @@ class ForestTSPSolver(object):
         cost_operators = []
         cost_operators += self.create_penalty_operators_for_bilocation()
         cost_operators += self.create_penalty_operators_for_repetition()
-        # cost_operators += self.create_weights_cost_operators()
+        cost_operators += self.create_weights_cost_operators()
         return cost_operators
 
     def create_penalty_operators_for_bilocation(self):
@@ -84,7 +84,7 @@ class ForestTSPSolver(object):
     def create_penalty_operators_for_qubit_range(self, range_of_qubits):
         cost_operators = []
         tsp_matrix = TSP_utilities.get_tsp_matrix(self.nodes_array)
-        weight = -10 * np.max(tsp_matrix)
+        weight = -100 * np.max(tsp_matrix)
         # weight = -0.5
         for i in range_of_qubits:
             if i == range_of_qubits[0]:
@@ -107,7 +107,7 @@ class ForestTSPSolver(object):
         for i in range(number_of_nodes):
             for j in range(i, number_of_nodes):
                 for t in range(number_of_nodes - 1):
-                    weight = tsp_matrix[i][j] / 2
+                    weight = -tsp_matrix[i][j] / 2
                     if tsp_matrix[i][j] != 0:
                         qubit_1 = t * number_of_nodes + i
                         qubit_2 = (t + 1) * number_of_nodes + j
