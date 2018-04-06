@@ -8,8 +8,6 @@ import os
 def analyze_results_for_tsp_testing():
     path_1 = os.path.join("..", "results", "phase_3_results_weight_10_standard_case.csv")
     path_2 = os.path.join("..", "results", "phase_3_results_weight_100_standard_case.csv")
-    # path_1 = os.path.join("..", "results", "phase_3_results_weight_10_random.csv")
-    # path_2 = os.path.join("..", "results", "phase_3_results_weight_100_random.csv")
     data_1 = pd.read_csv(path_1)
     data_2 = pd.read_csv(path_2)
 
@@ -73,7 +71,7 @@ def analyze_results_for_all_ones_testing():
     pdb.set_trace()
 
 def analyze_results_for_parameters_testing():
-    data_path = os.path.join("..", "results", "phase_3_results_simple_case.csv")
+    data_path = os.path.join("..", "results", "phase_3_results_weight_100_standard_case.csv")
     data = pd.read_csv(data_path)
 
     aggregation_list = []
@@ -89,38 +87,38 @@ def analyze_results_for_parameters_testing():
 
     fig, ax = plt.subplots()
     ax.set_yscale('log')
-    scatter_plot = ax.scatter(aggregation_list[:,0], aggregation_list[:, 1], c=aggregation_list[:, 2], cmap='plasma')
+    scatter_plot = ax.scatter(aggregation_list[:,0], aggregation_list[:, 1], s=200, c=aggregation_list[:, 2], cmap='plasma')
     cbar = fig.colorbar(scatter_plot)
     ax.set_xlabel("steps")
     ax.set_ylabel("tol")
     ax.set_title("Calculation time for different parameters")
-    plt.savefig("time_per_parameters.png")
+    plt.savefig("calculation_time.png")
     plt.clf()
 
     fig, ax = plt.subplots()
     ax.set_yscale('log')
-    scatter_plot = ax.scatter(aggregation_list[:,0], aggregation_list[:, 1], c=aggregation_list[:, 3], cmap='plasma')
+    scatter_plot = ax.scatter(aggregation_list[:,0], aggregation_list[:, 1], s=200, c=aggregation_list[:, 3], cmap='plasma')
     cbar = fig.colorbar(scatter_plot)
     ax.set_xlabel("steps")
     ax.set_ylabel("tol")
-    ax.set_title("Mean probability of valid result for different parameters")
-    plt.savefig("valid_prob_per_parameters.png")
+    ax.set_title("Mean count of valid result for different parameters")
+    plt.savefig("valid_result_count.png")
     plt.clf()
 
     fig, ax = plt.subplots()
     ax.set_yscale('log')
-    scatter_plot = ax.scatter(aggregation_list[:,0], aggregation_list[:, 1], c=aggregation_list[:, 4], cmap='plasma')
+    scatter_plot = ax.scatter(aggregation_list[:,0], aggregation_list[:, 1], s=200, c=aggregation_list[:, 4], cmap='plasma')
     cbar = fig.colorbar(scatter_plot)
     ax.set_xlabel("steps")
     ax.set_ylabel("tol")
     ax.set_title("Percentage of correct results for different parameters")
-    plt.savefig("best_valid_per_parameters.png")
+    plt.savefig("correct_results_perc.png")
     plt.clf()
 
 
 def main():
-    analyze_results_for_tsp_testing()
-    # analyze_results_for_parameters_testing()
+    # analyze_results_for_tsp_testing()
+    analyze_results_for_parameters_testing()
     # analyze_results_for_all_ones_testing()
 
 if __name__ == '__main__':
