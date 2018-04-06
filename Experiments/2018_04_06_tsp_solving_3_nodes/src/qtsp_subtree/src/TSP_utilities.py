@@ -33,8 +33,8 @@ def distance_between_points(point_A, point_B):
 def solve_tsp_brute_force(nodes_array):
     number_of_nodes = len(nodes_array)
     # We start this permutation from 1, not 0, since we always want to start from 0
-    initial_order = range(1, number_of_nodes)
-    all_permutations = [[0] + list(x) for x in itertools.permutations(initial_order)]
+    initial_order = range(0, number_of_nodes)
+    all_permutations = [list(x) for x in itertools.permutations(initial_order)]
     cost_matrix = get_tsp_matrix(nodes_array)
     best_permutation = all_permutations[0]
     best_cost = calculate_cost(cost_matrix, all_permutations[0])

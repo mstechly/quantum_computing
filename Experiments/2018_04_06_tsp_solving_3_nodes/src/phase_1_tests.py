@@ -11,16 +11,15 @@ def run_testing_sequence(number_of_nodes=3):
     file_time = time.time()
     results_file = open("phase_1_results_" + str(file_time) + ".csv", 'w')
     angles_file = open("phase_1_angles_" + str(file_time) + ".csv", 'w')
-
+    list_of_embeddings = np.genfromtxt("embeddings_3.csv")
     results_file.write("steps,tol,time,valid_prob,best_valid,optimal_cost,forest_cost,best_sol_prob\n")
     csv_writer = csv.writer(results_file)
     csv_writer_angles = csv.writer(angles_file)
-    possible_steps = [3]
-    possible_xtol = [1e-4]
-    while True:
-        nodes_array = TSP_utilities.create_nodes_array(3)
-        steps = random.choice(possible_steps)
-        xtol = random.choice(possible_xtol)
+
+    for flat_nodes_array in list_of_embeddings:
+        nodes_array = np.reshape(flat_nodes_array, (number_of_nodes,2))
+        steps = 3
+        xtol = 10e-4
         run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol)
     results_file.close()
 
@@ -54,7 +53,7 @@ def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol, all_
 
     row = params + metrics + [optimal_cost, forest_cost, best_solution_probability]
     print(row)
-    [print(el) for el in forest_solver.create_cost_operators()]
+    # [print(el) for el in forest_solver.create_cost_operators()]
     if csv_writer is not None:
         csv_writer.writerow(row)
         csv_writer_angles.writerow(row)
