@@ -19,6 +19,12 @@ The main goals of this experiment were:
 
 As a main engine for solving TSP I'm code from this repository: https://github.com/BOHRTECHNOLOGY/quantum_tsp, imported as a subtree.
 
+I was using pyquil and grove.
+Pyquil version about 1.8.0 (Unfortunately I have not written down the exact version).
+Grove version 1.6.0 + commit `c1f51f671e5704cb246025b85c9d24d5d8bee2a8`.
+
+I had to use modified version of grove due to a bug (commit `c1f51f671e5704cb246025b85c9d24d5d8bee2a8` fixes it). I decided to commit the exact version I used.
+
 ## Experiment description
 
 The whole experiment was performed on a 3-nodes graphs. The coordinates of the graph were fixed and equal to [[0, 0], [0, 7], [0, 14]].
