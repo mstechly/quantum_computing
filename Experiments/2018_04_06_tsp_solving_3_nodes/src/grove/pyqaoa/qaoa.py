@@ -176,7 +176,7 @@ class QAOA(object):
 
             return prog
 
-        return psi_ref
+        return psi_ref, cost_para_programs
 
     def get_angles(self):
         """
@@ -192,7 +192,7 @@ class QAOA(object):
                   minimizer_kwargs=self.minimizer_kwargs)
         cost_ham = reduce(lambda x, y: x + y, self.cost_ham)
         # maximizing the cost function!
-        param_prog = self.get_parameterized_program()
+        param_prog, _ = self.get_parameterized_program()
         result = vqe.vqe_run(param_prog, cost_ham, stacked_params, qvm=self.qvm,
                              **self.vqe_options)
         self.result = result
@@ -212,7 +212,7 @@ class QAOA(object):
 
         assert angles.shape[0] == 2 * self.steps, "angles must be 2 * steps"
 
-        param_prog = self.get_parameterized_program()
+        param_prog, _ = self.get_parameterized_program()
         prog = param_prog(angles)
         wf = self.qvm.wavefunction(prog)
         wf = wf.amplitudes.reshape((-1, 1))
@@ -239,7 +239,7 @@ class QAOA(object):
         """
         if samples <= 0 and not isinstance(samples, int):
             raise ValueError("samples variable must be positive integer")
-        param_prog = self.get_parameterized_program()
+        param_prog, _ = self.get_parameterized_program()
         stacked_params = np.hstack((betas, gammas))
         sampling_prog = param_prog(stacked_params)
 

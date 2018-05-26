@@ -57,9 +57,41 @@ class ForestTSPSolver(object):
 
     def create_cost_operators(self):
         cost_operators = []
+        cost_operators += self.create_weights_cost_operators()
+
+        # 0 - 1: 3
+        # 0 - 2: 4
+        # 1 - 2: 5
+        # cost_operators += self.create_single_weight_operator(0, 1, 3)
+        # cost_operators += self.create_single_weight_operator(0, 2, 4)
+        # cost_operators += self.create_single_weight_operator(1, 2, 5)
+        # cost_operators += self.create_single_z_operator(0, 1, 0, 3)
+        # cost_operators += self.create_single_z_operator(0, 1, 0, -3)
+
         cost_operators += self.create_penalty_operators_for_bilocation()
         cost_operators += self.create_penalty_operators_for_repetition()
-        cost_operators += self.create_weights_cost_operators()
+
+        return cost_operators
+
+    def create_single_weight_operator(self, i, j, weight):
+        # Positive weights makes given connection more probable.
+        cost_operators = []
+        for t in [0, 1]:
+            cost_operators.append(create_single_z_operator(i, j, t, weight))
+            # qubit_1 = t * number_of_nodes + i
+            # qubit_2 = (t + 1) * number_of_nodes + j
+            # # cost_operators.append(PauliTerm("I", 0, weight) - PauliTerm("Z", qubit_1, weight) * PauliTerm("Z", qubit_2))
+            # cost_operators.append(PauliTerm("Z", qubit_1, weight) * PauliTerm("Z", qubit_2) - PauliTerm("I", 0, weight))
+            # cost_operators.append(PauliTerm("Z", qubit_2, weight) * PauliTerm("Z", qubit_1) - PauliTerm("I", 0, weight))
+        return cost_operators
+
+    def create_single_z_operator(self, i, j, t, weight):
+        number_of_nodes = 3
+        qubit_1 = t * number_of_nodes + i
+        qubit_2 = (t + 1) * number_of_nodes + j
+        cost_operators = []
+        cost_operators.append(PauliTerm("Z", qubit_1, weight) * PauliTerm("Z", qubit_2) - PauliTerm("I", 0, weight))
+        cost_operators.append(PauliTerm("Z", qubit_2, weight) * PauliTerm("Z", qubit_1) - PauliTerm("I", 0, weight))
         return cost_operators
 
     def create_penalty_operators_for_bilocation(self):
@@ -83,7 +115,7 @@ class ForestTSPSolver(object):
     def create_penalty_operators_for_qubit_range(self, range_of_qubits):
         cost_operators = []
         tsp_matrix = TSP_utilities.get_tsp_matrix(self.nodes_array)
-        weight = -100 * np.max(tsp_matrix)
+        weight = -10 * np.max(tsp_matrix)
         # weight = -0.5
         for i in range_of_qubits:
             if i == range_of_qubits[0]:
@@ -131,13 +163,14 @@ def print_fun(x):
     pass
 
 
-def visualize_cost_matrix(qaoa_inst, cost_operators, number_of_qubits, gammas=np.array([1.0]), steps=1):
+def visualize_cost_matrix(qaoa_inst, cost_operators, number_of_qubits, betas, gammas=np.array([1.0]), steps=1):
     from referenceqvm.api import QVMConnection as debug_QVMConnectiont
     debug_qvm = debug_QVMConnectiont(type_trans='unitary')
     param_prog, cost_param_programs = qaoa_inst.get_parameterized_program()
     import pyquil.quil as pq
     final_cost_prog = pq.Program()
 
+    full_program = param_prog(np.array([betas, gammas]))
     for idx in range(steps):
         for fprog in cost_param_programs[idx]:
             final_cost_prog += fprog(gammas[idx])
@@ -145,8 +178,8 @@ def visualize_cost_matrix(qaoa_inst, cost_operators, number_of_qubits, gammas=np
     final_matrix = debug_qvm.unitary(final_cost_prog)
     costs = np.diag(final_matrix)
     pure_costs = np.real(np.round(-np.log(costs)*1j,3))
-    for i in range(2**self.number_of_qubits):
-        print(np.binary_repr(i, width=self.number_of_qubits), pure_costs[i], np.round(costs[i],3))
+    for i in range(2**number_of_qubits):
+        print(np.binary_repr(i, width=number_of_qubits), pure_costs[i], np.round(costs[i],3))
     most_freq_string, sampling_results = qaoa_inst.get_string(betas, gammas, samples=100000)
     print("Most common results")
     [print(el) for el in sampling_results.most_common()[:10]]

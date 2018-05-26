@@ -1,6 +1,7 @@
 import time
 from qtsp_subtree.src import TSP_utilities 
 from qtsp_subtree.src.forest_tsp_solver import ForestTSPSolver
+from qtsp_subtree.src.forest_tsp_solver import visualize_cost_matrix
 import numpy as np
 import pdb
 import csv
@@ -9,29 +10,38 @@ import random
 
 def run_testing_sequence(number_of_nodes=3):
     file_time = time.time()
-    results_file = open("phase_1_results_" + str(file_time) + ".csv", 'w')
-    angles_file = open("phase_1_angles_" + str(file_time) + ".csv", 'w')
+    file_tag = "penalty_weight_10"
+    results_file = open("phase_1_" + file_tag + "_results_" + str(file_time) + ".csv", 'w')
+    angles_file = open("phase_1_" + file_tag + "_angles_" + str(file_time) + ".csv", 'w')
     list_of_embeddings = np.genfromtxt("embeddings_3.csv")
-    results_file.write("steps,tol,time,valid_prob,best_valid,optimal_cost,forest_cost,best_sol_prob\n")
+    results_file.write("array_id,steps,tol,time,valid_prob,best_valid,optimal_cost,forest_cost,best_sol_prob\n")
     csv_writer = csv.writer(results_file)
     csv_writer_angles = csv.writer(angles_file)
 
+    array_id = 0
+    start_id = 0
     for flat_nodes_array in list_of_embeddings:
+        if array_id < start_id:
+            array_id += 1
+            continue
         nodes_array = np.reshape(flat_nodes_array, (number_of_nodes,2))
         steps = 3
-        xtol = 10e-4
-        run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol)
+        xtol = 1e-4
+        run_single_tsp(array_id, nodes_array, csv_writer, csv_writer_angles, steps, xtol)
+        array_id += 1
     results_file.close()
 
 
-def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol, all_ones=-2):
-    params = [steps, xtol]
-    print(steps, xtol)
+def run_single_tsp(array_id, nodes_array, csv_writer, csv_writer_angles, steps, xtol, all_ones=-2):
+    params = [array_id, steps, xtol]
+    print(array_id, steps, xtol)
     ftol = xtol
     start_time = time.time()
     forest_solver = ForestTSPSolver(nodes_array, steps=steps, xtol=xtol, ftol=ftol, all_ones_coefficient=all_ones)
     
     [betas, gammas] = forest_solver.find_angles()
+    # betas = np.array([0.41075056, 1.51294564, 1.43774537])
+    # gammas = np.array([1.13871958, 1.27231168, 4.26257569])
     print(betas)
     print(gammas)
 
@@ -53,6 +63,10 @@ def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol, all_
 
     row = params + metrics + [optimal_cost, forest_cost, best_solution_probability]
     print(row)
+    print("Best results", results[:10])
+    print("Worst results", results[-10:])
+    # pdb.set_trace()
+    # visualize_cost_matrix(qaoa_inst=forest_solver.qaoa_inst, cost_operators=forest_solver.create_cost_operators(), number_of_qubits=9, betas=betas, gammas=gammas, steps=steps)
     # [print(el) for el in forest_solver.create_cost_operators()]
     if csv_writer is not None:
         csv_writer.writerow(row)

@@ -2,7 +2,10 @@
 
 ## Introduction
 
-TODO
+The goal of this experiment was to tweak algorithm, so it will start working on the 3 nodes first.
+However, due to long pause in development and possibly better solution to this problem I have abandonded this experiment.
+
+All the files here are commited are work in progress, left here just as a reference.
 
 ## Dependencies
 
@@ -12,10 +15,9 @@ I was using pyquil and grove.
 Pyquil: commit hash: `c01ac52525d85b16cf7e11680cb1e54d86a7958f`
 Grove: commit hash: `c1603ec3dff11755344ed8036d99541b0cbff93d`
 
-The exact versions of these repositories are commited to this project
+The exact versions of these repositories are commited to this project.
 
-## Experiment description
 
-TODO
+
 
 
