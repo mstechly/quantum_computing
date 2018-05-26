@@ -1,6 +1,6 @@
 import pyquil.api as api
 import numpy as np
-from grove.pyqaoa.qaoa import QAOA
+from grove.pyqaoa.hadfield_qaoa import QAOA as hadfield_QAOA
 from pyquil.paulis import PauliTerm, PauliSum
 import scipy.optimize
 from . import TSP_utilities
@@ -31,7 +31,7 @@ class ForestTSPSolver(object):
         vqe_option = {'disp': print_fun, 'return_all': True,
                       'samples': None}
 
-        self.qaoa_inst = QAOA(self.qvm, self.number_of_qubits, steps=self.steps, cost_ham=cost_operators,
+        self.qaoa_inst = hadfield_QAOA(self.qvm, list(range(self.number_of_qubits)), steps=self.steps, cost_ham=cost_operators,
                          ref_hamiltonian=driver_operators, store_basis=True,
                          minimizer=scipy.optimize.minimize,
                          minimizer_kwargs=minimizer_kwargs,
