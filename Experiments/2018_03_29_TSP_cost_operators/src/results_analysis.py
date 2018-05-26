@@ -40,6 +40,8 @@ def analyze_results_for_tsp_testing():
             print("Percentage of best solution being valid", perc_valid_solutions_1, perc_valid_solutions_2)
             print_result_with_std("Mean count of valid solutions", valid_prob_1, valid_prob_1_std, valid_prob_2, valid_prob_2_std)
             print_result_with_std("Mean count of best solutions", mean_best_sol_prob_1, mean_best_sol_prob_1_std, mean_best_sol_prob_2, mean_best_sol_prob_2_std)
+            print("Mean count of best solutions when best is valid", np.mean(valid_solutions_1.best_sol_prob), np.mean(valid_solutions_2.best_sol_prob))
+            print("Mean count of valid solutions when best is valid", np.mean(valid_solutions_1.valid_prob), np.mean(valid_solutions_2.valid_prob))
             print("Mean error:", mean_error_1, mean_error_2)
             print("Mean time:", np.mean(data_1_subset.time), np.mean(data_2_subset.time))
             print("")
