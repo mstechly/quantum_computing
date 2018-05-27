@@ -58,10 +58,27 @@ class ForestTSPSolver(object):
 
     def create_cost_operators(self):
         cost_operators = []
-        cost_operators += self.create_penalty_operators_for_bilocation()
-        cost_operators += self.create_penalty_operators_for_repetition()
-        cost_operators += self.create_weights_cost_operators()
+        cost_operators += self.create_phase_separator()
+        # cost_operators += self.create_penalty_operators_for_bilocation()
+        # cost_operators += self.create_penalty_operators_for_repetition()
+        # cost_operators += self.create_weights_cost_operators()
         return cost_operators
+
+    def create_phase_separator(self):
+        cost_operators = []
+        for t in range(len(self.nodes_array) - 1):
+            for city_1 in range(len(self.nodes_array)):
+                for city_2 in range(len(self.nodes_array)):
+                    if city_1 != city_2:
+                        tsp_matrix = TSP_utilities.get_tsp_matrix(self.nodes_array)
+                        distance = tsp_matrix[city_1, city_2]
+                        qubit_1 = t * len(self.nodes_array) + city_1
+                        qubit_2 = (t + 1) * len(self.nodes_array) + city_2
+                        print(t, city_1, city_2, qubit_1, qubit_2, distance)
+                        cost_operators.append(PauliTerm("Z", qubit_1, distance) * PauliTerm("Z", qubit_2))
+        phase_separator = [PauliSum(cost_operators)]
+        return phase_separator
+
 
     def create_penalty_operators_for_bilocation(self):
         # Additional cost for visiting more than one node in given time t
