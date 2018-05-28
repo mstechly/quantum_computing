@@ -9,7 +9,7 @@ import sys
 import random
 
 def run_testing_sequence(number_of_nodes=3, is_random=True):
-    nodes_array = np.array([[0, 0], [0,5], [5,5], [5,0]])
+    nodes_array = np.array([[0, 0], [5, 5], [0, 5], [5,0]])
     nodes_array = nodes_array[:number_of_nodes]
     file_time = time.time()
     file_tag = "test"

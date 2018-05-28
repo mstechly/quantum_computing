@@ -2,6 +2,9 @@ import pyquil.api as api
 import numpy as np
 from grove.pyqaoa.hadfield_qaoa import QAOA as hadfield_QAOA
 from pyquil.paulis import PauliTerm, PauliSum
+import pyquil.quil as pq
+from pyquil.gates import X
+
 import scipy.optimize
 from . import TSP_utilities
 import pdb
@@ -22,7 +25,9 @@ class ForestTSPSolver(object):
         self.all_ones_coefficient = all_ones_coefficient
 
         cost_operators = self.create_cost_operators()
-        driver_operators = self.create_driver_operators()
+        # driver_operators = self.create_driver_operators()
+        driver_operators = self.create_mixer()
+        initial_state_program = self.create_initial_state_program()
 
         minimizer_kwargs = {'method': 'Nelder-Mead',
                                 'options': {'ftol': self.ftol, 'xtol': self.xtol,
@@ -32,7 +37,7 @@ class ForestTSPSolver(object):
                       'samples': None}
 
         self.qaoa_inst = hadfield_QAOA(self.qvm, list(range(self.number_of_qubits)), steps=self.steps, cost_ham=cost_operators,
-                         ref_hamiltonian=driver_operators, store_basis=True,
+                         ref_hamiltonian=driver_operators, driver_ref=initial_state_program, store_basis=True,
                          minimizer=scipy.optimize.minimize,
                          minimizer_kwargs=minimizer_kwargs,
                          vqe_options=vqe_option)
@@ -74,11 +79,9 @@ class ForestTSPSolver(object):
                         distance = tsp_matrix[city_1, city_2]
                         qubit_1 = t * len(self.nodes_array) + city_1
                         qubit_2 = (t + 1) * len(self.nodes_array) + city_2
-                        print(t, city_1, city_2, qubit_1, qubit_2, distance)
                         cost_operators.append(PauliTerm("Z", qubit_1, distance) * PauliTerm("Z", qubit_2))
         phase_separator = [PauliSum(cost_operators)]
         return phase_separator
-
 
     def create_penalty_operators_for_bilocation(self):
         # Additional cost for visiting more than one node in given time t
@@ -140,8 +143,56 @@ class ForestTSPSolver(object):
 
         return driver_operators
 
+
+    def create_mixer(self):
+        """
+        Indexing here comes directly from 4.1.2 from paper 1709.03489, equations 54 - 58.
+        """
+        mixer_operators = []
+
+        n = len(self.nodes_array)
+        for t in range(n - 1):
+            for city_1 in range(n):
+                for city_2 in range(n):
+                    i = t
+                    u = city_1
+                    v = city_2
+                    first_part = 1
+                    first_part *= self.s_plus(u, i)
+                    first_part *= self.s_plus(v, i+1)
+                    first_part *= self.s_minus(u, i+1)
+                    first_part *= self.s_minus(v, i)
+
+                    second_part = 1
+                    second_part *= self.s_minus(u, i)
+                    second_part *= self.s_minus(v, i+1)
+                    second_part *= self.s_plus(u, i+1)
+                    second_part *= self.s_plus(v, i)
+                    mixer_operators.append(first_part + second_part)
+        return mixer_operators
+
+    def create_initial_state_program(self):
+        """
+        As an initial state I use state, where in t=i we visit i-th city.
+        """
+        init_state = pq.Program()
+        for i in range(len(self.nodes_array)):
+            for j in range(len(self.nodes_array)):
+                if i==j:
+                    # init_state.inst(X(i*len(self.nodes_array) + j))
+                    init_state.inst(X(i + j))
+        return init_state
+
     def get_number_of_qubits(self):
         return len(self.nodes_array)**2
+
+    def s_plus(self, city, time):
+        qubit = time * len(self.nodes_array) + city
+        return PauliTerm("X", qubit) + PauliTerm("Y", qubit, 1j)
+
+    def s_minus(self, city, time):
+        qubit = time * len(self.nodes_array) + city
+        return PauliTerm("X", qubit) - PauliTerm("Y", qubit, 1j)
 
 
 def print_fun(x):
