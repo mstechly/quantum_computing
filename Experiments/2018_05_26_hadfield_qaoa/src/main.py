@@ -9,10 +9,30 @@ import sys
 import random
 
 def run_testing_sequence(number_of_nodes=3, is_random=True):
-    nodes_array = np.array([[0, 0], [5, 5], [0, 5], [5,0]])
-    nodes_array = nodes_array[:number_of_nodes]
+    # 1D cases:
+    # ARRAY 1: [0 - 1 - 2], symmetrical
+    # nodes_array = np.array([[0, 0], [0, 10], [0, 20]])
+    # # ARRAY 2: [0 - 2 - 1], symmetrical
+    # nodes_array = np.array([[0, 0], [0, 20], [0, 10]])
+    # # ARRAY 3: [2 - 1 - 0], symmetrical
+    # nodes_array = np.array([[0, 20], [0, 10], [0, 0]])
+    # # ARRAY 4: [0 - 1 - 2] assymetrical
+    # nodes_array = np.array([[0, 0], [0, 1], [0, 10]])
+    # # ARRAY 5: [2 - 0 - 1] assymetrical
+    # nodes_array = np.array([[0, 1], [0, 0], [0, 10]])
+
+    # # 2D cases:
+    # # ARRAY 1: equilateral triangle
+    nodes_array = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3)/2]])
+    # # ARRAY 2: symetrical triangle [0 - 2 - 1]
+    # nodes_array = np.array([[-5, 0], [5, 0], [0, 1]])
+    # # ARRAY 3: asymetrical triangle [0 - 2 - 1]
+    # nodes_array = np.array([[0, 0], [15, 0], [0, 1]])
+    # # ARRAY 4: random array
+    # nodes_array = None
+
     file_time = time.time()
-    file_tag = "test"
+    file_tag = "2d_1"
     results_file = open(file_tag + "_results_" + str(file_time) + ".csv", 'w')
     angles_file = open(file_tag + "_angles_" + str(file_time) + ".csv", 'w')
     results_file.write("steps,tol,time,valid_prob,best_valid,optimal_cost,forest_cost,best_sol_prob\n")
@@ -25,7 +45,15 @@ def run_testing_sequence(number_of_nodes=3, is_random=True):
         while True:
             steps = random.choice(possible_steps)
             xtol = random.choice(possible_xtol)
-            run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol)
+
+            if nodes_array is None:
+                nodes_list = []
+                for i in range(number_of_nodes):
+                    nodes_list.append(np.random.rand(2) * 10)
+                scaled_nodes_array = np.array(nodes_list)
+            else:
+                scaled_nodes_array = nodes_array * np.random.rand() * 5 + 5 * (np.random.rand() - 0.5)
+            run_single_tsp(scaled_nodes_array, csv_writer, csv_writer_angles, steps, xtol)
     else:
         for steps in possible_steps:
             for xtol in possible_xtol:
@@ -68,6 +96,8 @@ def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol):
     if csv_writer is not None:
         csv_writer.writerow(row)
         csv_writer_angles.writerow(row)
+        csv_writer_angles.writerow(nodes_array)
+        csv_writer_angles.writerow(results)
         csv_writer_angles.writerow(betas)
         csv_writer_angles.writerow(gammas)
         csv_writer_angles.writerow("\n")

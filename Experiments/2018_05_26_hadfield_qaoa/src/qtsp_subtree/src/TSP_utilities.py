@@ -43,8 +43,7 @@ def solve_tsp_brute_force(nodes_array):
         if current_cost < best_cost:
             best_permutation = permutation
             best_cost = current_cost
-
-    print(best_permutation, best_cost)
+    print("Brute force:", best_permutation, best_cost)
     return best_permutation
 
 

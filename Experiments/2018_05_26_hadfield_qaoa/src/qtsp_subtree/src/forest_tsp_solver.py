@@ -179,8 +179,8 @@ class ForestTSPSolver(object):
         for i in range(len(self.nodes_array)):
             for j in range(len(self.nodes_array)):
                 if i==j:
-                    # init_state.inst(X(i*len(self.nodes_array) + j))
-                    init_state.inst(X(i + j))
+                    init_state.inst(X(i*len(self.nodes_array) + j))
+
         return init_state
 
     def get_number_of_qubits(self):
