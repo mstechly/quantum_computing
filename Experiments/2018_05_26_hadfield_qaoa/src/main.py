@@ -46,8 +46,6 @@ def run_testing_sequence(number_of_nodes=3, is_random=True):
     results_file = open(file_tag + "_results_" + str(file_time) + ".csv", 'w')
     angles_file = open(file_tag + "_angles_" + str(file_time) + ".csv", 'w')
     results_file.write("case,steps,tol,time,optimal_cost,forest_cost,best_sol_prob\n")
-    csv_writer = csv.writer(results_file)
-    csv_writer_angles = csv.writer(angles_file)
 
     possible_steps = [3, 2, 1]
     possible_xtol = [1e-4, 1e-3, 1e-2]
@@ -64,10 +62,10 @@ def run_testing_sequence(number_of_nodes=3, is_random=True):
             scaled_nodes_array = np.array(nodes_list)
         else:
             scaled_nodes_array = nodes_array * np.random.rand() * 5 + 5 * (np.random.rand() - 0.5)
-        run_single_tsp(scaled_nodes_array, csv_writer, csv_writer_angles, steps, xtol, case)
+        run_single_tsp(scaled_nodes_array, results_file, angles_file, steps, xtol, case)
     results_file.close()
 
-def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol, case):
+def run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, case):
     params = [steps, xtol]
     print(steps, xtol)
     ftol = xtol
@@ -96,14 +94,18 @@ def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol, case
     print(row)
     print("Results", results)
 
-    if csv_writer is not None:
-        csv_writer.writerow(row)
-        csv_writer_angles.writerow(row)
-        csv_writer_angles.writerow(nodes_array)
-        csv_writer_angles.writerow(results)
-        csv_writer_angles.writerow(betas)
-        csv_writer_angles.writerow(gammas)
-        csv_writer_angles.writerow("\n")
+    csv_writer = csv.writer(results_file)
+    csv_writer_angles = csv.writer(angles_file)
+
+    csv_writer.writerow(row)
+    csv_writer_angles.writerow(row)
+    csv_writer_angles.writerow(nodes_array)
+    csv_writer_angles.writerow(results)
+    csv_writer_angles.writerow(betas)
+    csv_writer_angles.writerow(gammas)
+    csv_writer_angles.writerow("\n")
+    results_file.flush()
+    angles_file.flush()
     sys.stdout.flush()
 
 
