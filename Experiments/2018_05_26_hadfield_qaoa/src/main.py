@@ -9,59 +9,65 @@ import sys
 import random
 
 def run_testing_sequence(number_of_nodes=3, is_random=True):
+    all_nodes_arrays = []
     # 1D cases:
     # ARRAY 1: [0 - 1 - 2], symmetrical
-    # nodes_array = np.array([[0, 0], [0, 10], [0, 20]])
+    nodes_array_1 = np.array([[0, 0], [0, 10], [0, 20]])
+    all_nodes_arrays.append(nodes_array_1)
     # # ARRAY 2: [0 - 2 - 1], symmetrical
-    # nodes_array = np.array([[0, 0], [0, 20], [0, 10]])
+    nodes_array_2 = np.array([[0, 0], [0, 20], [0, 10]])
+    all_nodes_arrays.append(nodes_array_2)
     # # ARRAY 3: [2 - 1 - 0], symmetrical
-    # nodes_array = np.array([[0, 20], [0, 10], [0, 0]])
+    nodes_array_3 = np.array([[0, 10], [0, 20], [0, 0]])
+    all_nodes_arrays.append(nodes_array_3)
     # # ARRAY 4: [0 - 1 - 2] assymetrical
-    # nodes_array = np.array([[0, 0], [0, 1], [0, 10]])
+    nodes_array_4 = np.array([[0, 0], [0, 1], [0, 10]])
+    all_nodes_arrays.append(nodes_array_4)
     # # ARRAY 5: [2 - 0 - 1] assymetrical
-    # nodes_array = np.array([[0, 1], [0, 0], [0, 10]])
+    nodes_array_5 = np.array([[0, 1], [0, 0], [0, 10]])
+    all_nodes_arrays.append(nodes_array_5)
 
     # # 2D cases:
     # # ARRAY 1: equilateral triangle
-    nodes_array = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3)/2]])
+    nodes_array_6 = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3)/2]])
+    all_nodes_arrays.append(nodes_array_6)
     # # ARRAY 2: symetrical triangle [0 - 2 - 1]
-    # nodes_array = np.array([[-5, 0], [5, 0], [0, 1]])
+    nodes_array_7 = np.array([[-5, 0], [5, 0], [0, 1]])
+    all_nodes_arrays.append(nodes_array_7)
     # # ARRAY 3: asymetrical triangle [0 - 2 - 1]
-    # nodes_array = np.array([[0, 0], [15, 0], [0, 1]])
+    nodes_array_8 = np.array([[0, 0], [15, 0], [0, 1]])
+    all_nodes_arrays.append(nodes_array_8)
     # # ARRAY 4: random array
-    # nodes_array = None
+    nodes_array_9 = None
+    all_nodes_arrays.append(nodes_array_9)
 
     file_time = time.time()
-    file_tag = "2d_1"
+    file_tag = "test_series_2"
     results_file = open(file_tag + "_results_" + str(file_time) + ".csv", 'w')
     angles_file = open(file_tag + "_angles_" + str(file_time) + ".csv", 'w')
-    results_file.write("steps,tol,time,valid_prob,best_valid,optimal_cost,forest_cost,best_sol_prob\n")
+    results_file.write("case,steps,tol,time,optimal_cost,forest_cost,best_sol_prob\n")
     csv_writer = csv.writer(results_file)
     csv_writer_angles = csv.writer(angles_file)
 
     possible_steps = [3, 2, 1]
     possible_xtol = [1e-4, 1e-3, 1e-2]
-    if is_random:
-        while True:
-            steps = random.choice(possible_steps)
-            xtol = random.choice(possible_xtol)
-
-            if nodes_array is None:
-                nodes_list = []
-                for i in range(number_of_nodes):
-                    nodes_list.append(np.random.rand(2) * 10)
-                scaled_nodes_array = np.array(nodes_list)
-            else:
-                scaled_nodes_array = nodes_array * np.random.rand() * 5 + 5 * (np.random.rand() - 0.5)
-            run_single_tsp(scaled_nodes_array, csv_writer, csv_writer_angles, steps, xtol)
-    else:
-        for steps in possible_steps:
-            for xtol in possible_xtol:
-                for i in range(10):
-                    run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol)
+    possible_cases = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    while True:
+        steps = random.choice(possible_steps)
+        xtol = random.choice(possible_xtol)
+        case = random.choice(possible_cases)
+        nodes_array = all_nodes_arrays[case]
+        if nodes_array is None:
+            nodes_list = []
+            for i in range(number_of_nodes):
+                nodes_list.append(np.random.rand(2) * 10)
+            scaled_nodes_array = np.array(nodes_list)
+        else:
+            scaled_nodes_array = nodes_array * np.random.rand() * 5 + 5 * (np.random.rand() - 0.5)
+        run_single_tsp(scaled_nodes_array, csv_writer, csv_writer_angles, steps, xtol, case)
     results_file.close()
 
-def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol):
+def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol, case):
     params = [steps, xtol]
     print(steps, xtol)
     ftol = xtol
@@ -77,8 +83,6 @@ def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol):
     results = forest_solver.get_results()
     end_time = time.time()
     calculation_time = end_time - start_time
-    metrics = calculate_metrics(results, calculation_time)
-
 
     brute_force_solution = TSP_utilities.solve_tsp_brute_force(nodes_array)
     cost_matrix = TSP_utilities.get_tsp_matrix(nodes_array)
@@ -88,10 +92,9 @@ def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol):
     forest_cost = TSP_utilities.calculate_cost(cost_matrix, solution)
     best_solution_probability = results[0][1]
 
-    row = params + metrics + [optimal_cost, forest_cost, best_solution_probability]
+    row = [case] + params + [calculation_time] + [optimal_cost, forest_cost, best_solution_probability]
     print(row)
-    print("Best results", results[:10])
-    print("Worst results", results[-10:])
+    print("Results", results)
 
     if csv_writer is not None:
         csv_writer.writerow(row)
@@ -102,29 +105,6 @@ def run_single_tsp(nodes_array, csv_writer, csv_writer_angles, steps, xtol):
         csv_writer_angles.writerow(gammas)
         csv_writer_angles.writerow("\n")
     sys.stdout.flush()
-
-
-def check_if_solution_is_valid(solution):
-    solution = list(solution)
-    number_of_nodes = int(np.sqrt(len(solution)))
-    time_groups = [solution[number_of_nodes*i:number_of_nodes*(i+1)] for i in range(number_of_nodes)]
-    for group in time_groups:
-        if np.sum(group) != 1:
-            return False
-        if time_groups.count(group) != 1:
-            return False
-    return True
-
-
-def calculate_metrics(results, calculation_time):
-    valid_results_probability = 0
-    for entry in results:
-        if check_if_solution_is_valid(entry[0]):
-            valid_results_probability += entry[1]
-
-    best_result = results[0][0]
-    best_result_valid = check_if_solution_is_valid(best_result)
-    return [calculation_time, valid_results_probability, best_result_valid]
 
 
 def main():
