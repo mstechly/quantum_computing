@@ -47,8 +47,8 @@ def run_testing_sequence(number_of_nodes=3, is_random=True):
     angles_file = open(file_tag + "_angles_" + str(file_time) + ".csv", 'w')
     results_file.write("case,steps,tol,time,optimal_cost,forest_cost,best_sol_prob\n")
 
-    possible_steps = [3, 2, 1]
-    possible_xtol = [1e-4, 1e-3, 1e-2]
+    possible_steps = [2, 1]
+    possible_xtol = [1e-3, 1e-2]
     possible_cases = [0, 1, 2, 3, 4, 5, 6, 7, 8]
     while True:
         steps = random.choice(possible_steps)
