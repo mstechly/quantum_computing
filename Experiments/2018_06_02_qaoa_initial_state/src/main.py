@@ -12,48 +12,48 @@ def run_testing_sequence(number_of_nodes=3, is_random=True):
     all_nodes_arrays = []
     # 1D cases:
     # ARRAY 1: [0 - 1 - 2], symmetrical
-    nodes_array_1 = np.array([[0, 0], [0, 10], [0, 20]])
-    all_nodes_arrays.append(nodes_array_1)
+    nodes_array_0 = np.array([[0, 0], [0, 10], [0, 20]])
+    all_nodes_arrays.append(nodes_array_0)
     # # ARRAY 2: [0 - 2 - 1], symmetrical
-    nodes_array_2 = np.array([[0, 0], [0, 20], [0, 10]])
-    all_nodes_arrays.append(nodes_array_2)
+    nodes_array_1 = np.array([[0, 0], [0, 20], [0, 10]])
+    all_nodes_arrays.append(nodes_array_1)
     # # ARRAY 3: [2 - 1 - 0], symmetrical
-    nodes_array_3 = np.array([[0, 10], [0, 20], [0, 0]])
-    all_nodes_arrays.append(nodes_array_3)
+    nodes_array_2 = np.array([[0, 10], [0, 20], [0, 0]])
+    all_nodes_arrays.append(nodes_array_2)
     # # ARRAY 4: [0 - 1 - 2] assymetrical
-    nodes_array_4 = np.array([[0, 0], [0, 1], [0, 10]])
-    all_nodes_arrays.append(nodes_array_4)
+    nodes_array_3 = np.array([[0, 0], [0, 1], [0, 10]])
+    all_nodes_arrays.append(nodes_array_3)
     # # ARRAY 5: [2 - 0 - 1] assymetrical
-    nodes_array_5 = np.array([[0, 1], [0, 0], [0, 10]])
-    all_nodes_arrays.append(nodes_array_5)
+    nodes_array_4 = np.array([[0, 1], [0, 0], [0, 10]])
+    all_nodes_arrays.append(nodes_array_4)
 
     # # 2D cases:
     # # ARRAY 1: equilateral triangle
-    nodes_array_6 = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3)/2]])
-    all_nodes_arrays.append(nodes_array_6)
+    nodes_array_5 = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3) / 2]])
+    all_nodes_arrays.append(nodes_array_5)
     # # ARRAY 2: symetrical triangle [0 - 2 - 1]
-    nodes_array_7 = np.array([[-5, 0], [5, 0], [0, 1]])
-    all_nodes_arrays.append(nodes_array_7)
+    nodes_array_6 = np.array([[-5, 0], [5, 0], [0, 1]])
+    all_nodes_arrays.append(nodes_array_6)
     # # ARRAY 3: asymetrical triangle [0 - 2 - 1]
-    nodes_array_8 = np.array([[0, 0], [15, 0], [0, 1]])
-    all_nodes_arrays.append(nodes_array_8)
+    nodes_array_7 = np.array([[0, 0], [15, 0], [0, 1]])
+    all_nodes_arrays.append(nodes_array_7)
     # # ARRAY 4: random array
-    nodes_array_9 = None
-    all_nodes_arrays.append(nodes_array_9)
+    nodes_array_8 = None
+    all_nodes_arrays.append(nodes_array_8)
 
     file_time = time.time()
-    file_tag = "test_series_2"
+    file_tag = "initial_state_tests"
     results_file = open(file_tag + "_results_" + str(file_time) + ".csv", 'w')
     angles_file = open(file_tag + "_angles_" + str(file_time) + ".csv", 'w')
-    results_file.write("case,steps,tol,time,optimal_cost,forest_cost,best_sol_prob\n")
+    results_file.write("case,initial_state,steps,tol,time,optimal_cost,forest_cost,best_sol_prob\n")
 
-    possible_steps = [2, 1]
-    possible_xtol = [1e-3, 1e-2]
     possible_cases = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    possible_initial_states = [[2, 1, 0], [2, 0, 1], "all"]
     while True:
-        steps = random.choice(possible_steps)
-        xtol = random.choice(possible_xtol)
+        steps = 2
+        xtol = 1e-3
         case = random.choice(possible_cases)
+        initial_state = random.choice(possible_initial_states)
         nodes_array = all_nodes_arrays[case]
         if nodes_array is None:
             nodes_list = []
@@ -62,15 +62,15 @@ def run_testing_sequence(number_of_nodes=3, is_random=True):
             scaled_nodes_array = np.array(nodes_list)
         else:
             scaled_nodes_array = nodes_array * np.random.rand() * 5 + 5 * (np.random.rand() - 0.5)
-        run_single_tsp(scaled_nodes_array, results_file, angles_file, steps, xtol, case)
+        run_single_tsp(scaled_nodes_array, results_file, angles_file, steps, xtol, case, initial_state)
     results_file.close()
 
-def run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, case):
+def run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, case, initial_state):
     params = [steps, xtol]
     print(steps, xtol)
     ftol = xtol
     start_time = time.time()
-    forest_solver = ForestTSPSolver(nodes_array, steps=steps, xtol=xtol, ftol=ftol)
+    forest_solver = ForestTSPSolver(nodes_array, steps=steps, xtol=xtol, ftol=ftol, initial_state=initial_state)
     
     [betas, gammas] = forest_solver.find_angles()
     print(betas)
@@ -90,7 +90,7 @@ def run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, case):
     forest_cost = TSP_utilities.calculate_cost(cost_matrix, solution)
     best_solution_probability = results[0][1]
 
-    row = [case] + params + [calculation_time] + [optimal_cost, forest_cost, best_solution_probability]
+    row = [case, initial_state] + params + [calculation_time] + [optimal_cost, forest_cost, best_solution_probability]
     print(row)
     print("Results", results)
 

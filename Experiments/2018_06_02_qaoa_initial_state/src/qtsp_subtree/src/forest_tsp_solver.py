@@ -1,9 +1,11 @@
 import pyquil.api as api
 import numpy as np
 from grove.pyqaoa.hadfield_qaoa import QAOA as hadfield_QAOA
+from grove.alpha.arbitrary_state.arbitrary_state import create_arbitrary_state
 from pyquil.paulis import PauliTerm, PauliSum
 import pyquil.quil as pq
 from pyquil.gates import X
+import itertools
 
 import scipy.optimize
 from . import TSP_utilities
@@ -11,7 +13,7 @@ import pdb
 
 class ForestTSPSolver(object):
     """docstring for TSPSolver"""
-    def __init__(self, nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4, all_ones_coefficient=-2):
+    def __init__(self, nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4, all_ones_coefficient=-2, initial_state=[0, 1, 2]):
         self.nodes_array = nodes_array
         self.qvm = api.QVMConnection()
         self.steps = steps
@@ -23,6 +25,7 @@ class ForestTSPSolver(object):
         self.most_freq_string = None
         self.number_of_qubits = self.get_number_of_qubits()
         self.all_ones_coefficient = all_ones_coefficient
+        self.initial_state = initial_state
 
         cost_operators = self.create_cost_operators()
         # driver_operators = self.create_driver_operators()
@@ -175,13 +178,25 @@ class ForestTSPSolver(object):
         """
         As an initial state I use state, where in t=i we visit i-th city.
         """
-        init_state = pq.Program()
-        for i in range(len(self.nodes_array)):
-            for j in range(len(self.nodes_array)):
-                if i==j:
-                    init_state.inst(X(i*len(self.nodes_array) + j))
+        initial_state = pq.Program()
+        number_of_nodes = len(self.nodes_array)
+        if type(self.initial_state) is list:
+            for i in range(number_of_nodes):
+                initial_state.inst(X(i * number_of_nodes + self.initial_state[i]))
 
-        return init_state
+        elif self.initial_state == "all":
+            vector_of_states = np.zeros(2**self.number_of_qubits)
+            list_of_possible_states = []
+            initial_order = range(0, number_of_nodes)
+            all_permutations = [list(x) for x in itertools.permutations(initial_order)]
+            for permutation in all_permutations:
+                coding_of_permutation = 0
+                for i in range(len(permutation)):
+                    coding_of_permutation += 2**(i * number_of_nodes + permutation[i])
+                vector_of_states[coding_of_permutation] = 1
+            initial_state = create_arbitrary_state(vector_of_states)
+
+        return initial_state
 
     def get_number_of_qubits(self):
         return len(self.nodes_array)**2

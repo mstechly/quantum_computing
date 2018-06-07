@@ -6,25 +6,33 @@ import matplotlib.cm as cm
 import os
 
 def analyze_results():
-    path = os.path.join("..", "results", "test_series_2_full.csv")
+    path = os.path.join("..", "results", "initial_states_results.csv")
     data = pd.read_csv(path)
 
-    steps = np.sort(data.steps.unique())
-    tols = np.sort(data.tol.unique())[::-1]
+    # These lines are for adding the data from the previous experiment and filtering them appropriately.
+    old_data_path = os.path.join("..", "results", "2018_05_26_hadfield_qaoa.csv")
+    old_data = pd.read_csv(old_data_path)
+    old_data["initial_state"] = "[0, 1, 2]"
+    old_data = old_data[(old_data.tol==0.001) & (old_data.steps==2)]
+    data = pd.concat([data, old_data])
+
     cases = np.sort(data.case.unique())
+    initial_states = np.sort(data.initial_state.unique())
 
     data["forest_error"] = data.forest_cost - data.optimal_cost
-    for case in cases:
-        case_subset = data[(data.case==case)]
-        print("Case:", case)
-        analyze_dataset(case_subset)
+    for state in initial_states:
+        state_subset = data[(data.initial_state==state)]
+        print("Initial state:", state)
+        analyze_dataset(state_subset)
 
     for case in cases:
-        for step in steps:
-            for tol in tols:
-                data_subset = case_subset[(case_subset.steps==step) & (case_subset.tol==tol)]
-                print("case, step, tol:", case, step, tol)
-                analyze_dataset(data_subset)
+        print("_"*20)
+        for state in initial_states:
+            case_subset = data[(data.case==case)]
+            data_subset = case_subset[case_subset.initial_state==state]
+            print("case, initial_state:", case, state)
+            analyze_dataset(data_subset)
+
 
 
 def analyze_dataset(data_subset):
