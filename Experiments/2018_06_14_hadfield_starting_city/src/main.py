@@ -10,24 +10,22 @@ import random
 def run_testing_sequence():
     number_of_nodes = 4
     file_time = time.time()
-    file_tag = "initial_state_tests"
+    file_tag = "starting_node"
     results_file = open(file_tag + "_results_" + str(file_time) + ".csv", 'w')
     angles_file = open(file_tag + "_angles_" + str(file_time) + ".csv", 'w')
-    results_file.write("initial_state,steps,tol,time,optimal_cost,forest_cost,best_sol_prob\n")
+    results_file.write("starting_node,initial_state,steps,tol,time,optimal_cost,forest_cost,best_sol_prob\n")
 
     while True:
         steps = 2
         xtol = 1e-3
-        initial_state = "all"#[0, 1, 2]
-        starting_node = 0
-        # nodes_array = np.array([[0, 0], [1, 1], [2, 2], [3, 3]])
-        # nodes_array = np.array([[0, 0], [1, 1], [2, 2]])
+        initial_state = "all"
+        starting_node = random.randint(0, number_of_nodes-1)
+
         nodes_list = []
         for i in range(number_of_nodes):
             nodes_list.append(np.random.rand(2) * 10)
         nodes_array = np.array(nodes_list)
 
-        # nodes_array = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3) / 2]])
         run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, initial_state, starting_node)
     results_file.close()
 
@@ -49,7 +47,7 @@ def run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, initial_
     end_time = time.time()
     calculation_time = end_time - start_time
 
-    brute_force_solution = TSP_utilities.solve_tsp_brute_force_from_node_0(nodes_array)
+    brute_force_solution = TSP_utilities.solve_tsp_brute_force_from_given_node(nodes_array, starting_node)
     cost_matrix = TSP_utilities.get_tsp_matrix(nodes_array)
     optimal_cost = TSP_utilities.calculate_cost(cost_matrix, brute_force_solution)
 
@@ -57,7 +55,7 @@ def run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, initial_
     forest_cost = TSP_utilities.calculate_cost(cost_matrix, solution)
     best_solution_probability = results[0][1]
 
-    row = [initial_state] + params + [calculation_time] + [optimal_cost, forest_cost, best_solution_probability]
+    row = [starting_node, initial_state] + params + [calculation_time] + [optimal_cost, forest_cost, best_solution_probability]
     print(row)
     print("Results", results)
 

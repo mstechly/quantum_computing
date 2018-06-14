@@ -46,15 +46,16 @@ def solve_tsp_brute_force(nodes_array):
     return best_permutation
 
 
-def solve_tsp_brute_force_from_node_0(nodes_array):
+def solve_tsp_brute_force_from_given_node(nodes_array, starting_node):
     number_of_nodes = len(nodes_array)
-    # We start this permutation from 1, not 0, since we always want to start from 0
-    initial_order = range(1, number_of_nodes)
-    all_permutations = [[0] + list(x) for x in itertools.permutations(initial_order)]
+    initial_order = range(0, number_of_nodes)
+    all_permutations = [list(x) for x in itertools.permutations(initial_order)]
     cost_matrix = get_tsp_matrix(nodes_array)
     best_permutation = all_permutations[0]
     best_cost = calculate_cost(cost_matrix, all_permutations[0])
     for permutation in all_permutations:
+        if permutation[0] != starting_node:
+            continue
         current_cost = calculate_cost(cost_matrix, permutation)
         if current_cost < best_cost:
             best_permutation = permutation

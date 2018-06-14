@@ -1,6 +1,6 @@
 import pyquil.api as api
 import numpy as np
-from grove.pyqaoa.hadfield_qaoa import QAOA as hadfield_QAOA
+from grove.pyqaoa.qaoa import QAOA
 from grove.alpha.arbitrary_state.arbitrary_state import create_arbitrary_state
 from pyquil.paulis import PauliTerm, PauliSum
 import pyquil.quil as pq
@@ -13,8 +13,9 @@ import pdb
 
 class ForestTSPSolver(object):
     """docstring for TSPSolver"""
-    def __init__(self, full_nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4, initial_state=[0, 1, 2], starting_node=0):
+    def __init__(self, full_nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4, initial_state="all", starting_node=0):
         reduced_nodes_array, costs_to_starting_node = self.reduce_nodes_array(full_nodes_array, starting_node)
+
         self.nodes_array = reduced_nodes_array
         self.starting_node = starting_node
         self.full_nodes_array = full_nodes_array
@@ -30,8 +31,7 @@ class ForestTSPSolver(object):
         self.number_of_qubits = self.get_number_of_qubits()
         self.initial_state = initial_state
 
-        cost_operators = self.create_cost_operators()
-        # driver_operators = self.create_driver_operators()
+        cost_operators = self.create_phase_separator()
         driver_operators = self.create_mixer()
         initial_state_program = self.create_initial_state_program()
 
@@ -42,7 +42,7 @@ class ForestTSPSolver(object):
         vqe_option = {'disp': print_fun, 'return_all': True,
                       'samples': None}
 
-        self.qaoa_inst = hadfield_QAOA(self.qvm, list(range(self.number_of_qubits)), steps=self.steps, cost_ham=cost_operators,
+        self.qaoa_inst = QAOA(self.qvm, list(range(self.number_of_qubits)), steps=self.steps, cost_ham=cost_operators,
                          ref_hamiltonian=driver_operators, driver_ref=initial_state_program, store_basis=True,
                          minimizer=scipy.optimize.minimize,
                          minimizer_kwargs=minimizer_kwargs,
@@ -82,14 +82,6 @@ class ForestTSPSolver(object):
         full_solution.insert(0, self.starting_node)
         return full_solution
 
-    def create_cost_operators(self):
-        cost_operators = []
-        cost_operators += self.create_phase_separator()
-        # cost_operators += self.create_penalty_operators_for_bilocation()
-        # cost_operators += self.create_penalty_operators_for_repetition()
-        # cost_operators += self.create_weights_cost_operators()
-        return cost_operators
-
     def create_phase_separator(self):
         cost_operators = []
         for t in range(len(self.nodes_array) - 1):
@@ -109,67 +101,6 @@ class ForestTSPSolver(object):
 
         phase_separator = [PauliSum(cost_operators)]
         return phase_separator
-
-    def create_penalty_operators_for_bilocation(self):
-        # Additional cost for visiting more than one node in given time t
-        cost_operators = []
-        number_of_nodes = len(self.nodes_array)
-        for t in range(number_of_nodes):
-            range_of_qubits = list(range(t * number_of_nodes, (t + 1) * number_of_nodes))
-            cost_operators += self.create_penalty_operators_for_qubit_range(range_of_qubits)
-        return cost_operators
-
-    def create_penalty_operators_for_repetition(self):
-        # Additional cost for visiting given node more than one time
-        cost_operators = []
-        number_of_nodes = len(self.nodes_array)
-        for i in range(number_of_nodes):
-            range_of_qubits = list(range(i, number_of_nodes**2, number_of_nodes))
-            cost_operators += self.create_penalty_operators_for_qubit_range(range_of_qubits)
-        return cost_operators
-
-    def create_penalty_operators_for_qubit_range(self, range_of_qubits):
-        cost_operators = []
-        tsp_matrix = TSP_utilities.get_tsp_matrix(self.nodes_array)
-        weight = -100 * np.max(tsp_matrix)
-        # weight = -0.5
-        for i in range_of_qubits:
-            if i == range_of_qubits[0]:
-                z_term = PauliTerm("Z", i, weight)
-                all_ones_term = PauliTerm("I", 0, 0.5 * weight) - PauliTerm("Z", i, 0.5 * weight)
-            else:
-                z_term = z_term * PauliTerm("Z", i)
-                all_ones_term = all_ones_term * (PauliTerm("I", 0, 0.5) - PauliTerm("Z", i, 0.5))
-
-        z_term = PauliSum([z_term])
-        cost_operators.append(PauliTerm("I", 0, weight) - z_term - 2 * all_ones_term)
-
-        return cost_operators
-
-    def create_weights_cost_operators(self):
-        cost_operators = []
-        number_of_nodes = len(self.nodes_array)
-        tsp_matrix = TSP_utilities.get_tsp_matrix(self.nodes_array)
-        
-        for i in range(number_of_nodes):
-            for j in range(i, number_of_nodes):
-                for t in range(number_of_nodes - 1):
-                    weight = -tsp_matrix[i][j] / 2
-                    if tsp_matrix[i][j] != 0:
-                        qubit_1 = t * number_of_nodes + i
-                        qubit_2 = (t + 1) * number_of_nodes + j
-                        cost_operators.append(PauliTerm("I", 0, weight) - PauliTerm("Z", qubit_1, weight) * PauliTerm("Z", qubit_2))
-
-        return cost_operators
-
-    def create_driver_operators(self):
-        driver_operators = []
-        
-        for i in range(self.number_of_qubits):
-            driver_operators.append(PauliSum([PauliTerm("X", i, -1.0)]))
-
-        return driver_operators
-
 
     def create_mixer(self):
         """
