@@ -13,8 +13,12 @@ import pdb
 
 class ForestTSPSolver(object):
     """docstring for TSPSolver"""
-    def __init__(self, nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4, all_ones_coefficient=-2, initial_state=[0, 1, 2]):
-        self.nodes_array = nodes_array
+    def __init__(self, full_nodes_array, steps=3, ftol=1.0e-4, xtol=1.0e-4, initial_state=[0, 1, 2], starting_node=0):
+        reduced_nodes_array, costs_to_starting_node = self.reduce_nodes_array(full_nodes_array, starting_node)
+        self.nodes_array = reduced_nodes_array
+        self.starting_node = starting_node
+        self.full_nodes_array = full_nodes_array
+        self.costs_to_starting_node = costs_to_starting_node
         self.qvm = api.QVMConnection()
         self.steps = steps
         self.ftol = ftol
@@ -24,7 +28,6 @@ class ForestTSPSolver(object):
         self.qaoa_inst = None
         self.most_freq_string = None
         self.number_of_qubits = self.get_number_of_qubits()
-        self.all_ones_coefficient = all_ones_coefficient
         self.initial_state = initial_state
 
         cost_operators = self.create_cost_operators()
@@ -40,7 +43,7 @@ class ForestTSPSolver(object):
                       'samples': None}
 
         self.qaoa_inst = hadfield_QAOA(self.qvm, list(range(self.number_of_qubits)), steps=self.steps, cost_ham=cost_operators,
-                         ref_hamiltonian=driver_operators, driver_ref=None, store_basis=True,
+                         ref_hamiltonian=driver_operators, driver_ref=initial_state_program, store_basis=True,
                          minimizer=scipy.optimize.minimize,
                          minimizer_kwargs=minimizer_kwargs,
                          vqe_options=vqe_option)
@@ -61,8 +64,23 @@ class ForestTSPSolver(object):
     def get_solution(self):
         if self.most_freq_string is None:
             self.most_freq_string, sampling_results = self.qaoa_inst.get_string(self.betas, self.gammas, samples=10000)
-        quantum_order = TSP_utilities.binary_state_to_points_order_full(self.most_freq_string)
-        return quantum_order
+        reduced_solution = TSP_utilities.binary_state_to_points_order_full(self.most_freq_string)
+        full_solution = self.get_solution_for_full_array(reduced_solution)
+        return full_solution
+
+    def reduce_nodes_array(self, full_nodes_array, starting_node):
+        reduced_nodes_array = np.delete(full_nodes_array, starting_node, 0)
+        tsp_matrix = TSP_utilities.get_tsp_matrix(full_nodes_array)
+        costs_to_starting_node = np.delete(tsp_matrix[:, starting_node], starting_node)
+        return reduced_nodes_array, costs_to_starting_node
+
+    def get_solution_for_full_array(self, reduced_solution):
+        full_solution = reduced_solution
+        for i in range(len(full_solution)):
+            if full_solution[i] >= self.starting_node:
+                full_solution[i] += 1
+        full_solution.insert(0, self.starting_node)
+        return full_solution
 
     def create_cost_operators(self):
         cost_operators = []
@@ -83,6 +101,12 @@ class ForestTSPSolver(object):
                         qubit_1 = t * len(self.nodes_array) + city_1
                         qubit_2 = (t + 1) * len(self.nodes_array) + city_2
                         cost_operators.append(PauliTerm("Z", qubit_1, distance) * PauliTerm("Z", qubit_2))
+
+        for city in range(len(self.costs_to_starting_node)):
+            distance_from_0 = -self.costs_to_starting_node[city]
+            qubit = city
+            cost_operators.append(PauliTerm("Z", qubit, distance_from_0))
+
         phase_separator = [PauliSum(cost_operators)]
         return phase_separator
 
@@ -118,7 +142,7 @@ class ForestTSPSolver(object):
                 all_ones_term = all_ones_term * (PauliTerm("I", 0, 0.5) - PauliTerm("Z", i, 0.5))
 
         z_term = PauliSum([z_term])
-        cost_operators.append(PauliTerm("I", 0, weight) - z_term + self.all_ones_coefficient * all_ones_term)
+        cost_operators.append(PauliTerm("I", 0, weight) - z_term - 2 * all_ones_term)
 
         return cost_operators
 
@@ -212,27 +236,3 @@ class ForestTSPSolver(object):
 
 def print_fun(x):
     print(x)
-
-
-def visualize_cost_matrix(qaoa_inst, cost_operators, number_of_qubits, gammas=np.array([1.0]), steps=1):
-    from referenceqvm.api import QVMConnection as debug_QVMConnectiont
-    debug_qvm = debug_QVMConnectiont(type_trans='unitary')
-    param_prog, cost_param_programs = qaoa_inst.get_parameterized_program()
-    import pyquil.quil as pq
-    final_cost_prog = pq.Program()
-
-    for idx in range(steps):
-        for fprog in cost_param_programs[idx]:
-            final_cost_prog += fprog(gammas[idx])
-
-    final_matrix = debug_qvm.unitary(final_cost_prog)
-    costs = np.diag(final_matrix)
-    pure_costs = np.real(np.round(-np.log(costs)*1j,3))
-    for i in range(2**self.number_of_qubits):
-        print(np.binary_repr(i, width=self.number_of_qubits), pure_costs[i], np.round(costs[i],3))
-    most_freq_string, sampling_results = qaoa_inst.get_string(betas, gammas, samples=100000)
-    print("Most common results")
-    [print(el) for el in sampling_results.most_common()[:10]]
-    print("Least common results")
-    [print(el) for el in sampling_results.most_common()[-10:]]
-    pdb.set_trace()
