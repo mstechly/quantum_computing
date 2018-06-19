@@ -10,7 +10,7 @@ import random
 def run_testing_sequence():
     number_of_nodes = 4
     file_time = time.time()
-    file_tag = "starting_node"
+    file_tag = "starting_node_4_nodes"
     results_file = open(file_tag + "_results_" + str(file_time) + ".csv", 'w')
     angles_file = open(file_tag + "_angles_" + str(file_time) + ".csv", 'w')
     results_file.write("starting_node,initial_state,steps,tol,time,optimal_cost,forest_cost,best_sol_prob\n")

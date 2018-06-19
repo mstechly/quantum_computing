@@ -6,12 +6,16 @@ import matplotlib.cm as cm
 import os
 
 def analyze_results():
-    path = os.path.join("..", "results", "results.csv")
+    path = os.path.join("..", "results", "results_3_nodes.csv")
     data = pd.read_csv(path)
 
     initial_states = np.sort(data.initial_state.unique())
 
     data["forest_error"] = data.forest_cost - data.optimal_cost
+
+    print("all")
+    analyze_dataset(data)
+
     for starting_node in range(4):
         data_subset = data[data.starting_node == starting_node]
         print(starting_node)

@@ -1,7 +1,5 @@
 import numpy as np
 import itertools
-# This funny way of using matplotlib is due to my problems with _tkinter
-# https://stackoverflow.com/a/4935945/3021669
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
@@ -52,7 +50,7 @@ def solve_tsp_brute_force_from_given_node(nodes_array, starting_node):
     all_permutations = [list(x) for x in itertools.permutations(initial_order)]
     cost_matrix = get_tsp_matrix(nodes_array)
     best_permutation = all_permutations[0]
-    best_cost = calculate_cost(cost_matrix, all_permutations[0])
+    best_cost = calculate_cost(cost_matrix, all_permutations[0])*1000
     for permutation in all_permutations:
         if permutation[0] != starting_node:
             continue
