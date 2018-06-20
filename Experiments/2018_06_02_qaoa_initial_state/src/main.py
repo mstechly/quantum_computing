@@ -9,38 +9,6 @@ import sys
 import random
 
 def run_testing_sequence(number_of_nodes=3, is_random=True):
-    all_nodes_arrays = []
-    # 1D cases:
-    # ARRAY 1: [0 - 1 - 2], symmetrical
-    nodes_array_0 = np.array([[0, 0], [0, 10], [0, 20]])
-    all_nodes_arrays.append(nodes_array_0)
-    # # ARRAY 2: [0 - 2 - 1], symmetrical
-    nodes_array_1 = np.array([[0, 0], [0, 20], [0, 10]])
-    all_nodes_arrays.append(nodes_array_1)
-    # # ARRAY 3: [2 - 1 - 0], symmetrical
-    nodes_array_2 = np.array([[0, 10], [0, 20], [0, 0]])
-    all_nodes_arrays.append(nodes_array_2)
-    # # ARRAY 4: [0 - 1 - 2] assymetrical
-    nodes_array_3 = np.array([[0, 0], [0, 1], [0, 10]])
-    all_nodes_arrays.append(nodes_array_3)
-    # # ARRAY 5: [2 - 0 - 1] assymetrical
-    nodes_array_4 = np.array([[0, 1], [0, 0], [0, 10]])
-    all_nodes_arrays.append(nodes_array_4)
-
-    # # 2D cases:
-    # # ARRAY 1: equilateral triangle
-    nodes_array_5 = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3) / 2]])
-    all_nodes_arrays.append(nodes_array_5)
-    # # ARRAY 2: symetrical triangle [0 - 2 - 1]
-    nodes_array_6 = np.array([[-5, 0], [5, 0], [0, 1]])
-    all_nodes_arrays.append(nodes_array_6)
-    # # ARRAY 3: asymetrical triangle [0 - 2 - 1]
-    nodes_array_7 = np.array([[0, 0], [15, 0], [0, 1]])
-    all_nodes_arrays.append(nodes_array_7)
-    # # ARRAY 4: random array
-    nodes_array_8 = None
-    all_nodes_arrays.append(nodes_array_8)
-
     file_time = time.time()
     file_tag = "initial_state_tests"
     results_file = open(file_tag + "_results_" + str(file_time) + ".csv", 'w')
@@ -53,16 +21,13 @@ def run_testing_sequence(number_of_nodes=3, is_random=True):
         steps = 2
         xtol = 1e-3
         case = random.choice(possible_cases)
-        initial_state = random.choice(possible_initial_states)
-        nodes_array = all_nodes_arrays[case]
-        if nodes_array is None:
-            nodes_list = []
-            for i in range(number_of_nodes):
-                nodes_list.append(np.random.rand(2) * 10)
-            scaled_nodes_array = np.array(nodes_list)
-        else:
-            scaled_nodes_array = nodes_array * np.random.rand() * 5 + 5 * (np.random.rand() - 0.5)
-        run_single_tsp(scaled_nodes_array, results_file, angles_file, steps, xtol, case, initial_state)
+        if number_of_nodes == 3:
+            nodes_array = np.array([[0,0],[1,1],[2,2]])
+            initial_state = [0,1,2]
+        elif number_of_nodes == 4:
+            nodes_array = np.array([[0,0],[1,1],[2,2],[3,3]])
+            initial_state = [0,1,2,3]
+        run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, case, initial_state)
     results_file.close()
 
 def run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, case, initial_state):
@@ -110,7 +75,7 @@ def run_single_tsp(nodes_array, results_file, angles_file, steps, xtol, case, in
 
 
 def main():
-    run_testing_sequence(number_of_nodes=3)
+    run_testing_sequence(number_of_nodes=4)
 
 
 if __name__ == '__main__':
